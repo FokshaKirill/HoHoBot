@@ -52,3 +52,4 @@ G:\Study\GitHub\Dex\HoHoBot\Program\bin\Debug\net9.0\HoHoBot.Infrastructure.dll
 G:\Study\GitHub\Dex\HoHoBot\Program\bin\Debug\net9.0\HoHoBot.Infrastructure.pdb
 G:\Study\GitHub\Dex\HoHoBot\Program\bin\Debug\net9.0\HoHoBot.Domain.pdb
 G:\Study\GitHub\Dex\HoHoBot\Program\bin\Debug\net9.0\appsettings.json
+G:\Study\GitHub\Dex\HoHoBot\Program\obj\Debug\net9.0\Program.sourcelink.json

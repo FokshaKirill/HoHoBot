@@ -10,3 +10,4 @@ G:\Study\GitHub\Dex\HoHoBot\HoHoBot.Domain\obj\Debug\net9.0\HoHoBot.Domain.dll
 G:\Study\GitHub\Dex\HoHoBot\HoHoBot.Domain\obj\Debug\net9.0\refint\HoHoBot.Domain.dll
 G:\Study\GitHub\Dex\HoHoBot\HoHoBot.Domain\obj\Debug\net9.0\HoHoBot.Domain.pdb
 G:\Study\GitHub\Dex\HoHoBot\HoHoBot.Domain\obj\Debug\net9.0\ref\HoHoBot.Domain.dll
+G:\Study\GitHub\Dex\HoHoBot\HoHoBot.Domain\obj\Debug\net9.0\HoHoBot.Domain.sourcelink.json

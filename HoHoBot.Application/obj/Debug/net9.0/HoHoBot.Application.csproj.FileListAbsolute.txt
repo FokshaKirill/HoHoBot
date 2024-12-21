@@ -16,3 +16,4 @@ G:\Study\GitHub\Dex\HoHoBot\HoHoBot.Application\bin\Debug\net9.0\HoHoBot.Infrast
 G:\Study\GitHub\Dex\HoHoBot\HoHoBot.Application\bin\Debug\net9.0\HoHoBot.Domain.pdb
 G:\Study\GitHub\Dex\HoHoBot\HoHoBot.Application\obj\Debug\net9.0\HoHoBot..A73784D3.Up2Date
 G:\Study\GitHub\Dex\HoHoBot\HoHoBot.Application\bin\Debug\net9.0\appsettings.json
+G:\Study\GitHub\Dex\HoHoBot\HoHoBot.Application\obj\Debug\net9.0\HoHoBot.Application.sourcelink.json

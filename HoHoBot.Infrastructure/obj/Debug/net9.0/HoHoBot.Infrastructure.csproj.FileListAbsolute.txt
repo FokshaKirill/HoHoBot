@@ -16,3 +16,4 @@ G:\Study\GitHub\Dex\HoHoBot\HoHoBot.Infrastructure\obj\Debug\net9.0\refint\HoHoB
 G:\Study\GitHub\Dex\HoHoBot\HoHoBot.Infrastructure\obj\Debug\net9.0\HoHoBot.Infrastructure.pdb
 G:\Study\GitHub\Dex\HoHoBot\HoHoBot.Infrastructure\obj\Debug\net9.0\HoHoBot.Infrastructure.genruntimeconfig.cache
 G:\Study\GitHub\Dex\HoHoBot\HoHoBot.Infrastructure\obj\Debug\net9.0\ref\HoHoBot.Infrastructure.dll
+G:\Study\GitHub\Dex\HoHoBot\HoHoBot.Infrastructure\obj\Debug\net9.0\HoHoBot.Infrastructure.sourcelink.json

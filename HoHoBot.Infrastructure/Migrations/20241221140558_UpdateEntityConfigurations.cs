@@ -19,7 +19,7 @@ namespace HoHoBot.Infrastructure.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
                     ChatType = table.Column<string>(type: "TEXT", nullable: false),
-                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false)
+                    GameState = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -41,15 +41,29 @@ namespace HoHoBot.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "SentMessages",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    TelegramId = table.Column<long>(type: "INTEGER", nullable: false),
+                    SentAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SentMessages", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Participants",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     TelegramId = table.Column<long>(type: "INTEGER", nullable: false),
+                    ChatId = table.Column<long>(type: "INTEGER", nullable: false),
                     UserName = table.Column<string>(type: "TEXT", nullable: false),
                     FullName = table.Column<string>(type: "TEXT", nullable: false),
-                    ChatId = table.Column<long>(type: "INTEGER", nullable: false),
                     GameSessionId = table.Column<int>(type: "INTEGER", nullable: true)
                 },
                 constraints: table =>
@@ -78,6 +92,11 @@ namespace HoHoBot.Infrastructure.Migrations
                 name: "IX_Participants_GameSessionId",
                 table: "Participants",
                 column: "GameSessionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SentMessages_TelegramId",
+                table: "SentMessages",
+                column: "TelegramId");
         }
 
         /// <inheritdoc />
@@ -85,6 +104,9 @@ namespace HoHoBot.Infrastructure.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Participants");
+
+            migrationBuilder.DropTable(
+                name: "SentMessages");
 
             migrationBuilder.DropTable(
                 name: "Chats");

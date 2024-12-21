@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HoHoBot.Infrastructure.Migrations
 {
     [DbContext(typeof(HoHoBotDbContext))]
-    [Migration("20241219153825_UpdateEntityConfigurations")]
+    [Migration("20241221140558_UpdateEntityConfigurations")]
     partial class UpdateEntityConfigurations
     {
         /// <inheritdoc />
@@ -30,7 +30,7 @@ namespace HoHoBot.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("IsActive")
+                    b.Property<int>("GameState")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
@@ -90,6 +90,26 @@ namespace HoHoBot.Infrastructure.Migrations
                     b.HasIndex("GameSessionId");
 
                     b.ToTable("Participants");
+                });
+
+            modelBuilder.Entity("HoHoBot.Domain.Entities.SentMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("TelegramId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TelegramId")
+                        .HasDatabaseName("IX_SentMessages_TelegramId");
+
+                    b.ToTable("SentMessages");
                 });
 
             modelBuilder.Entity("HoHoBot.Domain.Entities.Participant", b =>
