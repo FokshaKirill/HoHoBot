@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HoHoBot.Infrastructure.Migrations
 {
     [DbContext(typeof(HoHoBotDbContext))]
-    [Migration("20241221140558_UpdateEntityConfigurations")]
+    [Migration("20241222174740_UpdateEntityConfigurations")]
     partial class UpdateEntityConfigurations
     {
         /// <inheritdoc />
@@ -32,6 +32,13 @@ namespace HoHoBot.Infrastructure.Migrations
 
                     b.Property<int>("GameState")
                         .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("GiftAmount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("GiftCurrency")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()

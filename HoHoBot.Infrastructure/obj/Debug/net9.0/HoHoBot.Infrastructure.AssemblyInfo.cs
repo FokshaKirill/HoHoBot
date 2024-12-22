@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HoHoBot.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4b83afe7401f9c639f455de89d82d1c11d103e82")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+68b58192887bc98753c05eace25a8b6d65560615")]
 [assembly: System.Reflection.AssemblyProductAttribute("HoHoBot.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HoHoBot.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

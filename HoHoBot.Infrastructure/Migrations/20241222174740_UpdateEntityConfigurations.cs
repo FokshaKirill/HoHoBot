@@ -19,6 +19,8 @@ namespace HoHoBot.Infrastructure.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
                     ChatType = table.Column<string>(type: "TEXT", nullable: false),
+                    GiftCurrency = table.Column<string>(type: "TEXT", nullable: false),
+                    GiftAmount = table.Column<decimal>(type: "TEXT", nullable: false),
                     GameState = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>

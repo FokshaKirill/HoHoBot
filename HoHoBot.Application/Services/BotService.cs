@@ -88,7 +88,17 @@ public class BotService
         switch (command)
         {
             case "/start":
-                await HandleStartCommand(chatId, chatType.ToString().ToLower(), userId);
+                string[] args = message.Text?.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (args.Length >= 3 && decimal.TryParse(args[2], out var amount))
+                {
+                    string currency = args[1];
+                    await HandleStartCommand(chatId, chatType.ToString().ToLower(), userId, currency, amount);
+                }
+                else
+                {
+                    await _botClient.SendTextMessageAsync(chatId,
+                        "⚠️ Используйте команду в формате: /start <валюта> <сумма>\nПример: /start USD 20");
+                }
                 break;
 
             case "/stop":
@@ -114,150 +124,180 @@ public class BotService
                 }
                 else
                 {
-                    await _botClient.SendTextMessageAsync(chatId, 
+                    await _botClient.SendTextMessageAsync(chatId,
                         "⚠️ Чтобы бросить снежок, ответьте на сообщение пользователя этой командой.");
                 }
                 break;
 
             default:
-                await _botClient.SendTextMessageAsync(chatId, "❓ Неизвестная команда. Попробуйте /start, /stop, /reset или /join.");
+                await _botClient.SendTextMessageAsync(chatId,
+                    "❓ Неизвестная команда. Попробуйте /start, /stop, /reset или /join.");
                 break;
         }
     }
 
-    public async Task HandleStartCommand(long chatId, string chatType, long userId)
+    public async Task HandleStartCommand(long chatId, string chatType, long userId, string currency, decimal amount)
+{
+    if (!await ValidateGroupAndAdmin(chatId, chatType, userId))
+        return;
+
+    var chat = await _dbContext.Chats.FirstOrDefaultAsync(c => c.ChatId == chatId);
+
+    string gameConditions = $"\ud83d\udcb0 Сумма подарка: {amount} {currency}\n\n";
+
+    if (chat == null)
     {
-        if (!await ValidateGroupAndAdmin(chatId, chatType, userId))
-            return;
-
-        var chat = await _dbContext.Chats.FirstOrDefaultAsync(c => c.ChatId == chatId);
-
-        if (chat == null)
+        _dbContext.Chats.Add(new Chat
         {
-            _dbContext.Chats.Add(new Chat
-            {
-                ChatId = chatId,
-                Name = chatId.ToString(),
-                ChatType = chatType,
-                GameState = GameState.Registration
-            });
-            await _dbContext.SaveChangesAsync();
+            ChatId = chatId,
+            Name = chatId.ToString(),
+            ChatType = chatType,
+            GameState = GameState.Registration,
+            GiftCurrency = currency,
+            GiftAmount = amount
+        });
+        await _dbContext.SaveChangesAsync();
 
-            var inlineKeyboard = new InlineKeyboardMarkup(new[]
-            {
-                new[] { InlineKeyboardButton.WithCallbackData("Участвовать", "join_game") }
-            });
-
-            await _botClient.SendTextMessageAsync(
-                chatId,
-                "✅ Чат зарегистрирован! Для участия в игре нажмите кнопку ниже.",
-                replyMarkup: inlineKeyboard);
-        }
-        else
+        var inlineKeyboard = new InlineKeyboardMarkup(new[]
         {
-            switch (chat.GameState)
-            {
-                case GameState.Completed:
-                    chat.GameState = GameState.Registration;
+            new[] { InlineKeyboardButton.WithCallbackData("Участвовать", "join_game") }
+        });
+
+        await _botClient.SendTextMessageAsync(
+            chatId,
+            $"✅ Чат зарегистрирован!\n\n🎁 Началась регистрация участников!\n" +
+            gameConditions +
+            $"Для участия в игре нажмите кнопку ниже.",
+            replyMarkup: inlineKeyboard);
+    }
+    else
+    {
+        switch (chat.GameState)
+        {
+            case GameState.Completed:
+                chat.GameState = GameState.Registration;
+                chat.GiftCurrency = currency;
+                chat.GiftAmount = amount;
+                _dbContext.Update(chat);
+                await _dbContext.SaveChangesAsync();
+
+                await _botClient.SendTextMessageAsync(
+                    chatId,
+                    $"✅ Игра завершена. Начинаем новую регистрацию участников!\n" +
+                    gameConditions +
+                    $"Нажмите кнопку ниже для участия в игре.");
+                break;
+
+            case GameState.Registration:
+                if (chat.GiftCurrency != currency || chat.GiftAmount != amount)
+                {
+                    chat.GiftCurrency = currency;
+                    chat.GiftAmount = amount;
                     _dbContext.Update(chat);
                     await _dbContext.SaveChangesAsync();
-                    await _botClient.SendTextMessageAsync(chatId,
-                        "✅ Игра завершена. Начинаем новую регистрацию участников!");
-                    break;
+                }
 
-                case GameState.Registration:
-                    var participants = await _dbContext.Participants
-                        .Where(p => p.ChatId == chatId)
-                        .ToListAsync();
+                var participants = await _dbContext.Participants
+                    .Where(p => p.ChatId == chatId)
+                    .ToListAsync();
 
-                    var participantList = participants.Any()
-                        ? "👥 Список зарегистрированных пользователей:\n" + string.Join("\n", participants.Select(p => $"@{p.UserName} ({p.FullName})"))
-                        : "❌ Пока нет зарегистрированных пользователей.";
+                var participantList = participants.Any()
+                    ? "👥 Список зарегистрированных пользователей:\n" +
+                      string.Join("\n", participants.Select(p => $"@{p.UserName} ({p.FullName})"))
+                    : "❌ Пока нет зарегистрированных пользователей.";
 
-                    var inlineKeyboard = new InlineKeyboardMarkup(new[]
-                    {
-                        new[] { InlineKeyboardButton.WithCallbackData("Участвовать", "join_game") }
-                    });
+                var inlineKeyboard = new InlineKeyboardMarkup(new[]
+                {
+                    new[] { InlineKeyboardButton.WithCallbackData("Участвовать", "join_game") }
+                });
 
-                    await _botClient.SendTextMessageAsync(
-                        chatId,
-                        $"{participantList}\n\n{(string.IsNullOrEmpty(participantList) ? "Нажмите кнопку ниже, чтобы участвовать." : "Нажмите кнопку ниже, чтобы стать участником игры.")}",
-                        replyMarkup: inlineKeyboard);
-                    break;
+                await _botClient.SendTextMessageAsync(
+                    chatId,
+                    $"{participantList}\n\n{gameConditions}" +
+                    $"Нажмите кнопку ниже, чтобы участвовать.",
+                    replyMarkup: inlineKeyboard);
+                break;
 
-                case GameState.InProgress:
-                    await _botClient.SendTextMessageAsync(chatId, "⚠️ Игра уже началась.");
-                    break;
+            case GameState.InProgress:
+                await _botClient.SendTextMessageAsync(chatId, "⚠️ Игра уже началась.");
+                break;
 
-                default:
-                    await _botClient.SendTextMessageAsync(chatId, "⚠️ Чат уже зарегистрирован.");
-                    break;
-            }
+            default:
+                await _botClient.SendTextMessageAsync(chatId, "⚠️ Чат уже зарегистрирован.");
+                break;
         }
     }
+}
 
     private async Task HandleJoinCommand(long chatId, long userId, string username, string fullName)
+{
+    var chat = await _dbContext.Chats.FirstOrDefaultAsync(c => c.ChatId == chatId);
+    if (chat == null)
     {
-        var chat = await _dbContext.Chats.FirstOrDefaultAsync(c => c.ChatId == chatId);
-        if (chat == null)
+        await _botClient.SendTextMessageAsync(chatId,
+            "⚠️ Чат не зарегистрирован. Сначала используйте команду /start.");
+        return;
+    }
+
+    if (chat.GameState != GameState.Registration)
+    {
+        string message = chat.GameState switch
+        {
+            GameState.Completed => "⚠️ Регистрация завершена. Сначала используйте команду /start для новой игры.",
+            GameState.InProgress => "⚠️ Игра уже началась. Регистрация участников невозможна.",
+            _ => "⚠️ Чат неактивен. Используйте команду /start для начала регистрации."
+        };
+        await _botClient.SendTextMessageAsync(chatId, message);
+        return;
+    }
+
+    var participantExists = await _dbContext.Participants
+        .AnyAsync(p => p.TelegramId == userId && p.ChatId == chatId);
+
+    if (!participantExists)
+    {
+        _dbContext.Participants.Add(new Participant
+        {
+            TelegramId = userId,
+            UserName = username,
+            ChatId = chatId,
+            FullName = fullName
+        });
+        await _dbContext.SaveChangesAsync();
+
+        var participants = await _dbContext.Participants
+            .Where(p => p.ChatId == chatId)
+            .ToListAsync();
+
+        var participantList = participants.Any()
+            ? string.Join("\n", participants.Select(p => $"@{p.UserName} ({p.FullName})"))
+            : "❌ Пока нет участников.";
+
+        string gameConditions = $"🎁 Условия игры:\n💰 Сумма подарка: {chat.GiftAmount} {chat.GiftCurrency}\n";
+
+        var inlineKeyboard = new InlineKeyboardMarkup(new[]
+        {
+            new[] { InlineKeyboardButton.WithCallbackData("Участвовать", "join_game") }
+        });
+
+        await _botClient.SendTextMessageAsync(chatId,
+            $"✅ @{username}, вы зарегистрированы!\n\n" +
+            gameConditions + 
+            $"👥 Список участников:\n{participantList}\n\n" +
+            "Для участия в игре нажмите кнопку ниже.",
+            replyMarkup: inlineKeyboard);
+
+        if (!await HasUserReceivedMessageAsync(userId))
         {
             await _botClient.SendTextMessageAsync(chatId,
-                "⚠️ Чат не зарегистрирован. Сначала используйте команду /start.");
-            return;
-        }
-
-        if (chat.GameState != GameState.Registration)
-        {
-            string message = chat.GameState switch
-            {
-                GameState.Completed => "⚠️ Регистрация завершена. Сначала используйте команду /start для новой игры.",
-                GameState.InProgress => "⚠️ Игра уже началась. Регистрация участников невозможна.",
-                _ => "⚠️ Чат неактивен. Используйте команду /start для начала регистрации."
-            };
-            await _botClient.SendTextMessageAsync(chatId, message);
-            return;
-        }
-
-        var participantExists = await _dbContext.Participants
-            .AnyAsync(p => p.TelegramId == userId && p.ChatId == chatId);
-
-        if (!participantExists)
-        {
-            _dbContext.Participants.Add(new Participant
-            {
-                TelegramId = userId,
-                UserName = username,
-                ChatId = chatId,
-                FullName = fullName
-            });
-            await _dbContext.SaveChangesAsync();
-
-            var participants = await _dbContext.Participants
-                .Where(p => p.ChatId == chatId)
-                .ToListAsync();
-
-            var participantList = string.Join("\n", participants.Select(p => $"@{p.UserName} ({p.FullName})"));
-
-            var inlineKeyboard = new InlineKeyboardMarkup(new[]
-            {
-                new[] { InlineKeyboardButton.WithCallbackData("Участвовать", "join_game") }
-            });
-
-            await _botClient.SendTextMessageAsync(chatId, 
-                $"✅ @{username}, вы зарегистрированы!\n\n👥 Список участников:\n{participantList}",
-                replyMarkup: inlineKeyboard);
-
-            if (!await HasUserReceivedMessageAsync(userId))
-            {
-                await _botClient.SendTextMessageAsync(chatId,
-                    $"⚠️ @{username}, пожалуйста, напишите боту в личных сообщениях, чтобы он смог отправлять вам уведомления!");
-            }
-        }
-        else
-        {
-            await _botClient.SendTextMessageAsync(chatId, $"⚠️ @{username}, вы уже зарегистрированы.");
+                $"⚠️ @{username}, пожалуйста, напишите боту в личных сообщениях, чтобы он смог отправлять вам уведомления!");
         }
     }
+    else
+    {
+        await _botClient.SendTextMessageAsync(chatId, $"⚠️ @{username}, вы уже зарегистрированы.");
+    }
+}
 
     private async Task HandleStopCommand(long chatId, string chatType, long userId)
     {
@@ -358,6 +398,7 @@ public class BotService
                         .ToListAsync();
 
                     var participantList = string.Join("\n", participants.Select(p => $"@{p.UserName} ({p.FullName})"));
+                    string gameConditions = $"🎁 Условия игры:\n💰 Сумма подарка: {chat.GiftAmount} {chat.GiftCurrency}\n";
 
                     var inlineKeyboard = new InlineKeyboardMarkup(new[]
                     {
@@ -367,7 +408,10 @@ public class BotService
                     await _botClient.EditMessageTextAsync(
                         chatId,
                         callbackQuery.Message.MessageId,
-                        $"✅ @{callbackQuery.From.Username}, вы успешно зарегистрированы!\n\nСписок участников:\n{participantList}",
+                        $"✅ @{callbackQuery.From.Username}, вы зарегистрированы!\n\n" +
+                        gameConditions + 
+                        $"👥 Список участников:\n{participantList}\n\n" +
+                        "Для участия в игре нажмите кнопку ниже.",
                         replyMarkup: inlineKeyboard);
                 }
                 else

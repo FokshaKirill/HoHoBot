@@ -30,6 +30,13 @@ namespace HoHoBot.Infrastructure.Migrations
                     b.Property<int>("GameState")
                         .HasColumnType("INTEGER");
 
+                    b.Property<decimal>("GiftAmount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("GiftCurrency")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
