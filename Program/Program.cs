@@ -33,7 +33,7 @@ IConfiguration configuration = builder.Build();
 var serviceProvider = new ServiceCollection()
     .AddSingleton<ITelegramBotClient>(new TelegramBotClient(botToken)) 
     .AddDbContext<HoHoBotDbContext>(options =>
-        options.UseSqlite(configuration.GetConnectionString("DefaultConnection")))
+        options.UseSqlite(configuration.GetConnectionString("DefaultConnection")) )
     .AddSingleton<BotService>()
     .BuildServiceProvider();
 
@@ -49,7 +49,17 @@ var botService = serviceProvider.GetRequiredService<BotService>();
 using var cts = new CancellationTokenSource();
 
 botClient.StartReceiving(
-    updateHandler: async (client, update, token) => await botService.HandleUpdateAsync(update),
+    updateHandler: async (client, update, token) => 
+    {
+        if (update.CallbackQuery != null)
+        {
+            await botService.HandleCallbackQueryAsync(update.CallbackQuery);
+        }
+        else
+        {
+            await botService.HandleUpdateAsync(update);
+        }
+    },
     errorHandler: async (client, exception, token) =>
     {
         Console.WriteLine($"Polling error: {exception.Message}");

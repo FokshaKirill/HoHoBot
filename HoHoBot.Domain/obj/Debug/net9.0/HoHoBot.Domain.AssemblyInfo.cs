@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HoHoBot.Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+25c83855f44c2cfd1b71b40362235a2b54e34594")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4b83afe7401f9c639f455de89d82d1c11d103e82")]
 [assembly: System.Reflection.AssemblyProductAttribute("HoHoBot.Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HoHoBot.Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
