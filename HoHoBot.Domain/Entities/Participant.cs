@@ -1,8 +1,5 @@
 ﻿namespace HoHoBot.Domain.Entities;
 
-/// <summary>
-/// 
-/// </summary>
 public class Participant
 {
     public int Id { get; set; }
